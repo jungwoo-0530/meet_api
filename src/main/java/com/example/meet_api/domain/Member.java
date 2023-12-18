@@ -16,22 +16,27 @@ public class Member extends BaseTimeEntity {
     @Column(name = "MEMBER_ID")
     private Long id;
 
+    @Column(name = "LOGIN_ID", nullable = false, length = 10)
     private String loginId;
-    private String password;
-    private String name;
-    private String email;
-    private String telephone;
-    private String role;
 
+    @Column(name = "PASSWORD", nullable = false)
+    private String password;
+
+    @Column(name = "NAME", nullable = false, length = 6)
+    private String name;
+
+    @Column(name = "EMAIL", nullable = false)
+    private String email;
+
+    @Column(name = "TELEPHONE", nullable = false, length = 11)
+    private String telephone;
+
+    @Column(name = "PROFILE_IMG", nullable = true)
     private String imgUri;
 
     public void changeTelephoneAndEmail(String email, String telephone){
         this.email = email;
         this.telephone = telephone;
-    }
-
-    public void changeRole(String role) {
-        this.role = role;
     }
 
     public void changePassword(String password) {
