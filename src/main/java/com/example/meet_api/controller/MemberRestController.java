@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/member")
@@ -24,7 +21,7 @@ public class MemberRestController {
 
     private final MemberService memberService;
 
-    @PostMapping("/join")
+    @PostMapping(value = "/join")
     public ResponseEntity<? extends BaseResponse> join(@RequestBody MemberCreateDto dto,
                                                        HttpServletRequest request){
 
@@ -38,7 +35,7 @@ public class MemberRestController {
     public ResponseEntity<? extends BaseResponse> login(@RequestBody MemberLoginDto dto,
                                                         HttpServletRequest request){
 
-        Member member = memberService.getMemberByLoginId(dto);
+        Member member = memberService.getMemberByLoginId(dto.getLoginId());
 
         if(member == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponse<>("", "존재하지 않는 아이디입니다.", "400"));
@@ -51,6 +48,12 @@ public class MemberRestController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(new CommonResponse<>(member, "로그인에 성공하였습니다.", "200"));
+    }
+
+    @GetMapping("/alarm")
+    public ResponseEntity<? extends BaseResponse> alarm(HttpServletRequest request){
+
+        return ResponseEntity.ok().body(new CommonResponse<>("test", "test", "200"));
     }
 
 }

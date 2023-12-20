@@ -29,6 +29,7 @@ public class MemberCreateDto {
 
 //    @NotBlank(message = "핸드폰 번호는 필수입니다.", groups = ValidationGroup.NotEmptyGroup.class)
 //    @Pattern(regexp = "^\\d{3}-\\d{3,4}-\\d{4}$", message = "핸드폰 번호 패턴이 맞지 않습니다.", groups = ValidationGroup.PatternCheckGroup.class)
+
     private String telephone;
 
     private String imgUri;

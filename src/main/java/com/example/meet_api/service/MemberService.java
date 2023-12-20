@@ -36,10 +36,11 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public Member getMemberByLoginId(MemberLoginDto dto){
+    public Member getMemberByLoginId(String loginId){
 
-        return memberRepository.findByLoginId(dto.getLoginId());
+        return memberRepository.findByLoginId(loginId);
     }
+
 
 
     public String encodePassword(String password){
