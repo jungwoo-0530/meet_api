@@ -29,20 +29,15 @@ public class Member extends BaseTimeEntity {
     private String email;
 
     @Column(name = "TELEPHONE", nullable = false, length = 11)
-    private Integer telephone;
-//    private String role;
+    private String telephone;
 
     @Column(name = "PROFILE_IMG", nullable = true)
     private String imgUri;
 
-    public void changeTelephoneAndEmail(String email, Integer telephone){
+    public void changeTelephoneAndEmail(String email, String telephone){
         this.email = email;
         this.telephone = telephone;
     }
-
-    /*public void changeRole(String role) {
-        this.role = role;
-    }*/
 
     public void changePassword(String password) {
         this.password = password;

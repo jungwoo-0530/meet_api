@@ -12,6 +12,7 @@ public class CommonResponse<T> extends BaseResponse{
     private int count;
     private T data;
     private String message;
+    private String status;
 
     public CommonResponse(T data) {
 
@@ -24,8 +25,9 @@ public class CommonResponse<T> extends BaseResponse{
 
     }
 
-    public CommonResponse(T data, String message) {
+    public CommonResponse(T data, String message, String status) {
         this.message = message;
+        this.status = status;
         this.data = data;
         if (data instanceof List) {
             this.count = ((List<?>) data).size();
