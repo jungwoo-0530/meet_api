@@ -1,16 +1,23 @@
 package com.example.meet_api.controller;
 
+import com.example.meet_api.domain.InviteInfo;
+import com.example.meet_api.domain.Location;
 import com.example.meet_api.domain.Member;
 import com.example.meet_api.dto.BaseResponse;
 import com.example.meet_api.dto.CommonResponse;
+import com.example.meet_api.dto.InviteInfo.InviteInfoDto;
 import com.example.meet_api.dto.Location.LocationCreateDto;
 import com.example.meet_api.service.LocationService;
 import com.example.meet_api.service.MemberService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/map")
@@ -27,8 +34,15 @@ public class MapRestController {
      * 리스트
      * */
     @GetMapping("/list")
-    public ResponseEntity<? extends BaseResponse> list(HttpServletRequest request) {
-        return ResponseEntity.ok().body(new CommonResponse<>("test", "test", "200"));
+    public ResponseEntity<? extends BaseResponse> list(@RequestParam("id") String ownerId  ,HttpServletRequest request) {
+
+        List<Location> locationList = locationService.getLocationList(ownerId);
+
+        if(locationList.isEmpty()){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "데이터가 없습니다.", "204"));
+        }
+
+        return ResponseEntity.ok().body(new CommonResponse<>(locationList, "목록을 불러왔습니다.", "200"));
     }
 
     /*
@@ -40,7 +54,7 @@ public class MapRestController {
         Member member = memberService.getMemberByLoginId(dto.getOtherLoginId());
 
         if(member == null){
-            return ResponseEntity.status(400).body(new CommonResponse<>("", "존재하지 않는 아이디입니다.", "400"));
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "존재하지 않는 아이디입니다.", "204"));
         }
 
         locationService.addLocation(dto);
@@ -52,11 +66,38 @@ public class MapRestController {
     * 초대 수락
     * */
     @PostMapping("/accept")
-    public ResponseEntity<? extends BaseResponse> accept(@RequestBody LocationCreateDto dto, HttpServletRequest request) {
+    public ResponseEntity<? extends BaseResponse> accept(@RequestBody InviteInfoDto dto, HttpServletRequest request) {
 
         locationService.acceptInvite(dto);
 
         return ResponseEntity.ok().body(new CommonResponse<>("test", "test", "200"));
+    }
+
+    /*
+    * 초대 목록
+    * */
+    @GetMapping("/invite/list")
+    public ResponseEntity<? extends BaseResponse> inviteList(@RequestParam("id") String inviteeId, HttpServletRequest request) {
+
+        List<InviteInfo> inviteList = locationService.getInviteList(inviteeId);
+
+        if(inviteList.isEmpty()){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "데이터가 없습니다.", "204"));
+        }
+
+        return ResponseEntity.ok().body(new CommonResponse<>(inviteList, "목록을 불러왔습니다.", "200"));
+    }
+
+
+    @PostMapping("/delete")
+    public ResponseEntity<? extends BaseResponse> delete(@RequestBody String body, HttpServletRequest request) throws JsonProcessingException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        LocationCreateDto locationCreateDto = objectMapper.readValue(body, LocationCreateDto.class);
+
+        locationService.deleteLocationAndChat(locationCreateDto.getLocationId());
+
+        return ResponseEntity.ok().body(new CommonResponse<>("", "삭제되었습니다.", "200"));
     }
 
 

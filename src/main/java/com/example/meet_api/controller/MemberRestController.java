@@ -38,13 +38,13 @@ public class MemberRestController {
         Member member = memberService.getMemberByLoginId(dto.getLoginId());
 
         if(member == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponse<>("", "존재하지 않는 아이디입니다.", "400"));
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "존재하지 않는 아이디입니다.", "204"));
         }
 
         boolean matchPassword = memberService.matchPassword(dto.getPassword(), member.getPassword());
 
         if(!matchPassword){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponse<>("", "비밀번호가 일치하지 않습니다.", "400"));
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "비밀번호가 일치하지 않습니다.", "204"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(new CommonResponse<>(member, "로그인에 성공하였습니다.", "200"));
