@@ -57,4 +57,7 @@ public class Location extends BaseTimeEntity{
     @Column(name = "STATUS", nullable = true)
     private String status;
 
+    @Column(name = "USE_YN", nullable = false)
+    private String useYn;
+
 }

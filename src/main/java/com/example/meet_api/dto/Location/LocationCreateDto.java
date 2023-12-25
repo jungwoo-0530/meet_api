@@ -28,4 +28,6 @@ public class LocationCreateDto {
         private String destinationLatitude;
         private String destinationLongitude;
         private String destinationAddress;
+
+        private String useYn;
 }
