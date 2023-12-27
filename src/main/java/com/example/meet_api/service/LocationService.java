@@ -1,12 +1,14 @@
 package com.example.meet_api.service;
 
 import com.example.meet_api.domain.InviteInfo;
-import com.example.meet_api.domain.Location;
+import com.example.meet_api.domain.Location.Location;
+import com.example.meet_api.domain.Location.LocationDetail;
 import com.example.meet_api.dto.Chat.ChatCreateDto;
 import com.example.meet_api.dto.InviteInfo.InviteInfoDto;
 import com.example.meet_api.dto.Location.LocationCreateDto;
 import com.example.meet_api.repository.ChatRepository;
 import com.example.meet_api.repository.InviteInfoRepository;
+import com.example.meet_api.repository.LocationDetailRepository;
 import com.example.meet_api.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
 
+    private final LocationDetailRepository locationDetailRepository;
+
     private final InviteInfoRepository inviteInfoRepository;
 
     private final ChatService chatService;
@@ -32,7 +36,7 @@ public class LocationService {
 
     // 초대한 사람이 맵을 생성했을 때
     @Transactional
-    public Long addLocation(LocationCreateDto dto){
+    public void addLocation(LocationCreateDto dto){
 
         Date today = new Date();
         Locale currentLocale = new Locale("KOREAN", "KOREA");
@@ -60,6 +64,16 @@ public class LocationService {
 
         Location location = locationRepository.save(newLocation);
 
+        // 방 만든 사람 경도, 위도 위치 Detail insert
+        LocationDetail locationDetail = LocationDetail.builder()
+                .locationId(location.getId())
+                .loginId(dto.getMyLoginId())
+                .latitude(dto.getOwnerLatitude())
+                .longitude(dto.getOwnerLongitude())
+                .build();
+
+        locationDetailRepository.save(locationDetail);
+
         //초대 insert
         InviteInfo inviteInfo = InviteInfo.builder()
                 .locationId(location.getId())
@@ -80,7 +94,6 @@ public class LocationService {
 
         chatService.addChat(chatCreateDto);
 
-        return location.getId();
     }
 
     // 초대 받은 사람이 수락했을 때
@@ -103,6 +116,16 @@ public class LocationService {
 
             // 채팅방 상태 업데이트
             chatService.updateChatStatus(location.getId(), "A");
+
+            // 상대방 경도, 위도 위치 Detail insert
+            LocationDetail locationDetail = LocationDetail.builder()
+                    .locationId(location.getId())
+                    .loginId(dto.getInviteeId())
+                    .latitude(dto.getInviteeLatitude())
+                    .longitude(dto.getInviteeLongitude())
+                    .build();
+
+            locationDetailRepository.save(locationDetail);
 
         } else{
             // 거절
@@ -130,5 +153,26 @@ public class LocationService {
         locationRepository.findById(locationId).orElseThrow(NullPointerException::new).setUseYn("N");
 
         chatRepository.findByLocationId(locationId).orElseThrow(NullPointerException::new).setUseYn("N");
+    }
+
+    @Transactional
+    public void updateLocation(LocationCreateDto dto) {
+
+        locationDetailRepository.updateLocationDetail(dto.getLocationId(), dto.getMyLoginId(), dto.getOwnerLatitude(), dto.getOwnerLongitude());
+
+    }
+
+    @Transactional(readOnly = true)
+    public LocationDetail getLocationDetail(Long locationId, String loginId){
+
+        return locationDetailRepository.getLocationDetailByLocationIdAndLoginId(locationId, loginId).orElseThrow();
+
+    }
+
+    @Transactional(readOnly = true)
+    public Location getLocation(Long locationId){
+
+        return locationRepository.findById(locationId).orElseThrow();
+
     }
 }

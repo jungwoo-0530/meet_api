@@ -1,5 +1,6 @@
-package com.example.meet_api.domain;
+package com.example.meet_api.domain.Location;
 
+import com.example.meet_api.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -10,7 +11,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Location extends BaseTimeEntity{
+public class Location extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
