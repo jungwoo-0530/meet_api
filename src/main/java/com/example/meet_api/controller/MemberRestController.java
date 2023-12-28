@@ -56,4 +56,36 @@ public class MemberRestController {
         return ResponseEntity.ok().body(new CommonResponse<>("test", "test", "200"));
     }
 
+
+    @GetMapping("/check/name")
+    public ResponseEntity<? extends BaseResponse> checkName(@RequestParam("name") String name,
+                                                            HttpServletRequest request){
+
+        boolean isExistName = memberService.isExistName(name);
+
+        if(isExistName){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "이미 존재하는 이름입니다.", "204"));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(new CommonResponse<>("", "사용 가능한 이름입니다.", "200"));
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<? extends BaseResponse> getMemberInfo(@RequestParam("id") Long id){
+
+            Member member = memberService.getMemberById(id);
+
+            return ResponseEntity.ok().body(new CommonResponse<>(member, "데이터를 불러왔습니다.", "200"));
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<? extends BaseResponse> updateMemberInfo(@RequestBody MemberCreateDto dto,
+                                                                   HttpServletRequest request){
+
+        Member member = memberService.updateMember(dto);
+
+
+        return ResponseEntity.ok().body(new CommonResponse<>("", "회원정보가 수정되었습니다.", "200"));
+    }
+
 }
