@@ -1,7 +1,8 @@
 package com.example.meet_api.controller;
 
 import com.example.meet_api.domain.InviteInfo;
-import com.example.meet_api.domain.Location;
+import com.example.meet_api.domain.Location.Location;
+import com.example.meet_api.domain.Location.LocationDetail;
 import com.example.meet_api.domain.Member;
 import com.example.meet_api.dto.BaseResponse;
 import com.example.meet_api.dto.CommonResponse;
@@ -43,6 +44,22 @@ public class MapRestController {
         }
 
         return ResponseEntity.ok().body(new CommonResponse<>(locationList, "목록을 불러왔습니다.", "200"));
+    }
+
+    /*
+    * 단건 조회
+    * */
+    @GetMapping("/detail")
+    public ResponseEntity<? extends BaseResponse> getOne(@RequestParam("locationId") Long id){
+
+        try{
+            Location location = locationService.getLocation(id);
+
+            return ResponseEntity.ok().body(new CommonResponse<>(location, "데이터를 불러왔습니다.", "200"));
+        } catch (Exception e){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "데이터가 없습니다.", "204"));
+        }
+
     }
 
     /*
@@ -98,6 +115,32 @@ public class MapRestController {
         locationService.deleteLocationAndChat(locationCreateDto.getLocationId());
 
         return ResponseEntity.ok().body(new CommonResponse<>("", "삭제되었습니다.", "200"));
+    }
+
+    /*
+    * 위치 업데이트
+    */
+    @PostMapping("/location/update")
+    public ResponseEntity<? extends BaseResponse> updateLocation(@RequestBody LocationCreateDto dto, HttpServletRequest request) {
+
+        locationService.updateLocation(dto);
+
+        return ResponseEntity.ok().body(new CommonResponse<>("", "업데이트 되었습니다.", "200"));
+    }
+
+    /*
+    * 상대방 위치 가져오기
+    * */
+    @GetMapping("/location/other")
+    public ResponseEntity<? extends BaseResponse> getOtherLocation(@RequestParam("locationId")Long id, @RequestParam("otherLoginId") String loginId, HttpServletRequest request) {
+
+        try{
+            LocationDetail locationDetail = locationService.getLocationDetail(id, loginId);
+
+            return ResponseEntity.ok().body(new CommonResponse<>(locationDetail, "데이터를 불러왔습니다.", "200"));
+        } catch (Exception e){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "데이터가 없습니다.", "204"));
+        }
     }
 
 

@@ -11,6 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MemberCreateDto {
 
+    private Long id;
+
 //    @NotBlank(message = "로그인ID는 필수입니다.", groups = ValidationGroup.NotEmptyGroup.class)
 //    @Size(min = 4, max = 15, message = "아이디를 4~15자리 입력해주세요.", groups = ValidationGroup.SizeGroup.class)
 //    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "로그인ID는 특수문자는 포함할 수 없습니다.", groups = ValidationGroup.PatternCheckGroup.class)

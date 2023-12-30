@@ -41,6 +41,31 @@ public class MemberService {
         return memberRepository.findByLoginId(loginId);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isExistName(String name){
+
+        return memberRepository.existsByName(name);
+    }
+
+    @Transactional(readOnly = true)
+    public Member getMemberById(Long id){
+
+        return memberRepository.findById(id).orElseThrow(NullPointerException::new);
+    }
+
+    @Transactional
+    public Member updateMember(MemberCreateDto dto){
+
+        Member member = memberRepository.findById(dto.getId()).orElseThrow(NullPointerException::new);
+
+        member.setName(dto.getName());
+        if(!dto.getPassword().isEmpty()) {
+            member.setPassword(encodePassword(dto.getPassword()));
+        }
+
+        return member;
+    }
+
 
 
     public String encodePassword(String password){
@@ -50,6 +75,8 @@ public class MemberService {
         return passwordEncoder.encode(password);
 
     }
+
+
 
     public boolean matchPassword(String password, String encodedPassword){
 
