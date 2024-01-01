@@ -1,5 +1,6 @@
 package com.example.meet_api.controller;
 
+import com.example.meet_api.domain.FileVO;
 import com.example.meet_api.domain.Member;
 import com.example.meet_api.dto.BaseResponse;
 import com.example.meet_api.dto.CommonResponse;
@@ -10,8 +11,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/member")
@@ -24,6 +31,10 @@ public class MemberRestController {
     @PostMapping(value = "/join")
     public ResponseEntity<? extends BaseResponse> join(@RequestBody MemberCreateDto dto,
                                                        HttpServletRequest request){
+
+        if(memberService.isExistHandPhone(dto.getTelephone())){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "이미 가입된 회원입니다.", "204"));
+        }
 
         Long memberId = memberService.addMember(dto);
 
@@ -70,6 +81,19 @@ public class MemberRestController {
         return ResponseEntity.status(HttpStatus.OK).body(new CommonResponse<>("", "사용 가능한 이름입니다.", "200"));
     }
 
+    @PostMapping("/check/loginId")
+    public ResponseEntity<? extends BaseResponse> checkLoginId(@RequestBody MemberCreateDto dto,
+                                                               HttpServletRequest request){
+
+        boolean isExistLoginId = memberService.isExistLoginId(dto.getLoginId());
+
+        if(isExistLoginId){
+            return ResponseEntity.status(200).body(new CommonResponse<>("", "이미 존재하는 아이디입니다.", "204"));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(new CommonResponse<>("", "사용 가능한 아이디입니다.", "200"));
+    }
+
     @GetMapping("/info")
     public ResponseEntity<? extends BaseResponse> getMemberInfo(@RequestParam("id") Long id){
 
@@ -88,4 +112,30 @@ public class MemberRestController {
         return ResponseEntity.ok().body(new CommonResponse<>("", "회원정보가 수정되었습니다.", "200"));
     }
 
+    @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<? extends BaseResponse> updateProfile(@RequestParam(value = "profileImg", required = false) MultipartFile profileImg,
+                                                                @RequestParam(value = "loginId", required = false) String loginId,
+                                                                HttpServletRequest request) throws IOException {
+
+        String responseUri;
+
+        if(profileImg != null && !profileImg.isEmpty()){
+            String uuid = UUID.randomUUID().toString();
+            String fileName = uuid + "_" + profileImg.getOriginalFilename();
+            String fullPath = "/Users/jungwoo/Desktop/sources/meet/app/assets/profile/" + fileName;
+            profileImg.transferTo(new File(fullPath));
+
+            // 멤버 테이블 업데이트
+            memberService.updateProfileImg(fileName, loginId);
+
+            responseUri = fileName;
+        }else{
+            // 멤버 테이블 업데이트
+            memberService.updateProfileImg("", loginId);
+
+            responseUri = "";
+        }
+
+        return ResponseEntity.ok().body(new CommonResponse<>(responseUri, "프로필이 수정되었습니다.", "200"));
+    }
 }

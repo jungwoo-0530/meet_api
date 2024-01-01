@@ -25,4 +25,7 @@ public class InviteInfo extends BaseTimeEntity{
     @Column(name = "INVITER_ID", nullable = false)
     private String inviterId;
 
+    @Column(name = "CHAT_ROOM_ID", nullable = false)
+    private String chatRoomId;
+
 }

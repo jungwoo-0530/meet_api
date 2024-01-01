@@ -51,6 +51,9 @@ public class Location extends BaseTimeEntity {
     @Column(name = "DESTINATION_ADDRESS", nullable = false)
     private String destinationAddress;
 
+    @Column(name = "DESTINATION_DETAIL_ADDRESS", nullable = true)
+    private String destinationDetailAddress;
+
     @Column(name = "CHAT_ROOM_ID", nullable = true)
     private String chatRoomId;
 

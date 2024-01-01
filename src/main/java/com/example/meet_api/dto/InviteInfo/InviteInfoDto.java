@@ -1,14 +1,12 @@
 package com.example.meet_api.dto.InviteInfo;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class InviteInfoDto {
 
     Long id;
@@ -21,4 +19,17 @@ public class InviteInfoDto {
     String inviteeLongitude;
     String inviteeAddress;
 
+    String inviterAddress;
+
+    String destinationAddress;
+    String destinationDetailAddress;
+
+    String chatRoomId;
+
+    String hat;
+    String top;
+    String bottom;
+    String shoes;
+    String etc;
+    String outer;
 }

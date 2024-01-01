@@ -28,6 +28,18 @@ public class LocationCreateDto {
         private String destinationLatitude;
         private String destinationLongitude;
         private String destinationAddress;
+        private String destinationDetailAddress;
 
         private String useYn;
+
+
+
+        // 인상 착의
+        private String hat;
+        private String top;
+        private String bottom;
+        private String shoes;
+        private String etc;
+        private String outer;
+
 }

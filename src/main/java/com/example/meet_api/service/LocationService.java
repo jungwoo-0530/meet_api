@@ -1,26 +1,24 @@
 package com.example.meet_api.service;
 
+import com.example.meet_api.domain.Chat;
 import com.example.meet_api.domain.InviteInfo;
 import com.example.meet_api.domain.Location.Location;
 import com.example.meet_api.domain.Location.LocationDetail;
+import com.example.meet_api.domain.Look;
 import com.example.meet_api.dto.Chat.ChatCreateDto;
 import com.example.meet_api.dto.InviteInfo.InviteInfoDto;
 import com.example.meet_api.dto.Location.LocationCreateDto;
-import com.example.meet_api.repository.ChatRepository;
-import com.example.meet_api.repository.InviteInfoRepository;
-import com.example.meet_api.repository.LocationDetailRepository;
-import com.example.meet_api.repository.LocationRepository;
+import com.example.meet_api.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LocationService {
 
@@ -34,9 +32,11 @@ public class LocationService {
 
     private final ChatRepository chatRepository;
 
+    private final LookRepository lookRepository;
+
     // 초대한 사람이 맵을 생성했을 때
     @Transactional
-    public void addLocation(LocationCreateDto dto){
+    public Location addLocation(LocationCreateDto dto){
 
         Date today = new Date();
         Locale currentLocale = new Locale("KOREAN", "KOREA");
@@ -57,6 +57,7 @@ public class LocationService {
                 .destinationLatitude(dto.getDestinationLatitude())
                 .destinationLongitude(dto.getDestinationLongitude())
                 .destinationAddress(dto.getDestinationAddress())
+                .destinationDetailAddress(dto.getDestinationDetailAddress())
                 .chatRoomId(chatRoomId)
                 .status("W")
                 .useYn("Y")
@@ -79,6 +80,7 @@ public class LocationService {
                 .locationId(location.getId())
                 .inviterId(dto.getMyLoginId())
                 .inviteeId(dto.getOtherLoginId())
+                .chatRoomId(chatRoomId)
                 .build();
 
         inviteInfoRepository.save(inviteInfo);
@@ -93,6 +95,23 @@ public class LocationService {
                 .build();
 
         chatService.addChat(chatCreateDto);
+
+
+        // 인상착의
+        Look look = Look.builder()
+                .locationId(location.getId())
+                .loginId(dto.getMyLoginId())
+                .hat(dto.getHat())
+                .top(dto.getTop())
+                .bottom(dto.getBottom())
+                .shoes(dto.getShoes())
+                .etc(dto.getEtc())
+                .outerCloth(dto.getOuter())
+                .build();
+
+        lookRepository.save(look);
+
+        return location;
 
     }
 
@@ -127,6 +146,20 @@ public class LocationService {
 
             locationDetailRepository.save(locationDetail);
 
+            // 인상착의
+            Look look = Look.builder()
+                    .locationId(location.getId())
+                    .loginId(dto.getInviteeId())
+                    .hat(dto.getHat())
+                    .top(dto.getTop())
+                    .bottom(dto.getBottom())
+                    .shoes(dto.getShoes())
+                    .etc(dto.getEtc())
+                    .outerCloth(dto.getOuter())
+                    .build();
+
+            lookRepository.save(look);
+
         } else{
             // 거절
             location.setStatus("C");
@@ -136,9 +169,30 @@ public class LocationService {
     }
 
     @Transactional(readOnly = true)
-    public List<InviteInfo> getInviteList(String inviteeId) {
+    public List<InviteInfoDto> getInviteList(String inviteeId) {
 
-        return inviteInfoRepository.findAllByInviteeId(inviteeId);
+        List<InviteInfoDto> inviteInfoDtoList = new ArrayList<>();
+
+        List<InviteInfo> allByInviteeId = inviteInfoRepository.findAllByInviteeId(inviteeId);
+
+        for (InviteInfo inviteInfo : allByInviteeId) {
+            Location location = locationRepository.findById(inviteInfo.getLocationId()).orElseThrow(NullPointerException::new);
+
+            InviteInfoDto inviteInfoDto = InviteInfoDto.builder()
+                    .id(inviteInfo.getId())
+                    .locationId(inviteInfo.getLocationId())
+                    .inviterId(inviteInfo.getInviterId())
+                    .inviteeId(inviteInfo.getInviteeId())
+                    .chatRoomId(inviteInfo.getChatRoomId())
+                    .inviterAddress(location.getOwnerAddress())
+                    .destinationAddress(location.getDestinationAddress())
+                    .destinationDetailAddress(location.getDestinationDetailAddress())
+                    .build();
+
+            inviteInfoDtoList.add(inviteInfoDto);
+        }
+
+        return inviteInfoDtoList;
     }
 
     @Transactional(readOnly = true)
@@ -150,15 +204,25 @@ public class LocationService {
     @Transactional
     public void deleteLocationAndChat(Long locationId){
 
-        locationRepository.findById(locationId).orElseThrow(NullPointerException::new).setUseYn("N");
+        Location location = locationRepository.findById(locationId).orElseThrow(NullPointerException::new);
 
-        chatRepository.findByLocationId(locationId).orElseThrow(NullPointerException::new).setUseYn("N");
+        location.setUseYn("N");
+        location.setStatus("E");
+
+        Chat chat = chatRepository.findByLocationId(locationId).orElseThrow(NullPointerException::new);
+        chat.setStatus("E");
+        chat.setUseYn("N");
+
+        locationDetailRepository.deleteLocationDetailByLocationId(locationId);
+
+        lookRepository.deleteLookByLocationId(locationId);
     }
 
     @Transactional
     public void updateLocation(LocationCreateDto dto) {
 
-        locationDetailRepository.updateLocationDetail(dto.getLocationId(), dto.getMyLoginId(), dto.getOwnerLatitude(), dto.getOwnerLongitude());
+        // 현재 실행 중인 위치 서비스를 전체 업데이트 해야함.
+        locationDetailRepository.updateLocationDetail(dto.getMyLoginId(), dto.getOwnerLatitude(), dto.getOwnerLongitude());
 
     }
 
@@ -174,5 +238,9 @@ public class LocationService {
 
         return locationRepository.findById(locationId).orElseThrow();
 
+    }
+
+    public boolean existLocation(LocationCreateDto dto) {
+        return locationRepository.findLocationByOwnerIdAndOtherId(dto.getMyLoginId(), dto.getOtherLoginId()) > 0;
     }
 }

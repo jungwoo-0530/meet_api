@@ -63,6 +63,17 @@ public class MemberService {
             member.setPassword(encodePassword(dto.getPassword()));
         }
 
+        // chat
+
+
+        // invite_info
+
+        // location
+
+        // location_detail
+
+        // look
+
         return member;
     }
 
@@ -86,4 +97,22 @@ public class MemberService {
 
     }
 
+    @Transactional
+    public void updateProfileImg(String fileName, String loginId) {
+
+            Member member = memberRepository.findByLoginId(loginId);
+
+            member.setImgUri(fileName);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isExistLoginId(String loginId) {
+        return memberRepository.countByLoginId(loginId) > 0;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isExistHandPhone(String telephone) {
+
+        return memberRepository.countByTelephone(telephone) > 0;
+    }
 }
